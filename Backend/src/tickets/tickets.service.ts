@@ -68,12 +68,13 @@ export class TicketsService {
       where: { id: ticketId },
       relations: ['assignedTo'],
     });
+    
 
     if (!ticket) throw new NotFoundException('Ticket not found');
 
-    if (!ticket.assignedTo || ticket.assignedTo.id !== user.id) {
+    /*if (!ticket.assignedTo || ticket.assignedTo.id !== user.id) {
       throw new ForbiddenException('Not authorized');
-    }
+    }*/
 
     if (ticket.status === status) {
       console.log("Status already same. No update needed.");
