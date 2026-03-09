@@ -34,7 +34,7 @@ export class TicketsService {
 
     console.log("STEP 1 OK");
 
-    //freeAgent.isAvailable = false;
+    freeAgent.isAvailable = false;
 
     console.log("STEP 2 BEFORE SAVE");
 
@@ -68,6 +68,7 @@ export class TicketsService {
       where: { id: ticketId },
       relations: ['assignedTo'],
     });
+    
 
     if (!ticket) throw new NotFoundException('Ticket not found');
 
