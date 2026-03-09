@@ -17,8 +17,16 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
+  findById(id: number) {
+    return this.userRepo.findOne({ where: { id } });
+  }
+
   findByEmail(email: string) {
     return this.userRepo.findOne({ where: { email } });
+  }
+
+  findAll() {
+    return this.userRepo.find();
   }
 
   findAgents() {

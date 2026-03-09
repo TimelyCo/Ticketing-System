@@ -9,7 +9,6 @@ import { Repository } from 'typeorm';
 
 import { Message } from './entities/message.entity';
 import { Ticket } from '../tickets/entities/ticket.entity';
-import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class MessagesService {
@@ -22,8 +21,7 @@ export class MessagesService {
     private ticketRepo: Repository<Ticket>,
   ) {}
 
-  async sendMessage(ticketId: number, content: string, user: User) {
-
+  async sendMessage(ticketId: number, content: string, user: { userId: number; role: string }) {
     const ticket = await this.ticketRepo.findOne({
       where: { id: ticketId },
       relations: ['createdBy', 'assignedTo'],
@@ -31,41 +29,49 @@ export class MessagesService {
 
     if (!ticket) throw new NotFoundException('Ticket not found');
 
-    // Only employee or assigned agent can chat
+    // Only the ticket creator or assigned agent can chat
     if (
-      ticket.createdBy.id !== user.id &&
-      ticket.assignedTo?.id !== user.id
+      ticket.createdBy.id !== user.userId &&
+      ticket.assignedTo?.id !== user.userId
     ) {
       throw new ForbiddenException('Not allowed to chat on this ticket');
     }
 
     const message = this.messageRepo.create({
       content,
-      sender: user,
+      sender: { id: user.userId } as any,
       ticket,
     });
 
-    return this.messageRepo.save(message);
+    const saved = await this.messageRepo.save(message);
+
+    // Return with sender relation loaded
+    return this.messageRepo.findOne({
+      where: { id: saved.id },
+      relations: ['sender'],
+    });
   }
 
-  async getMessages(ticketId: number, user: User) {
-  const ticket = await this.ticketRepo.findOne({
-    where: { id: ticketId },
-    relations: ['createdBy', 'assignedTo'],
-  });
+  async getMessages(ticketId: number, user: { userId: number; role: string }) {
+    const ticket = await this.ticketRepo.findOne({
+      where: { id: ticketId },
+      relations: ['createdBy', 'assignedTo'],
+    });
 
-  if (!ticket) throw new NotFoundException();
+    if (!ticket) throw new NotFoundException('Ticket not found');
 
-  if (
-    ticket.createdBy.id !== user.id &&
-    ticket.assignedTo?.id !== user.id
-  ) {
-    throw new ForbiddenException();
+    // Only the ticket creator or assigned agent can view messages
+    if (
+      ticket.createdBy.id !== user.userId &&
+      ticket.assignedTo?.id !== user.userId
+    ) {
+      throw new ForbiddenException('Not allowed to view messages on this ticket');
+    }
+
+    return this.messageRepo.find({
+      where: { ticket: { id: ticketId } },
+      relations: ['sender'],
+      order: { createdAt: 'ASC' },
+    });
   }
-
-  return this.messageRepo.find({
-    where: { ticket: { id: ticketId } },
-    order: { createdAt: 'ASC' },
-  });
-}
 }

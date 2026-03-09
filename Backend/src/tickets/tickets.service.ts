@@ -1,11 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ticket } from './entities/ticket.entity';
 import { User } from '../users/entities/user.entity';
 import { TicketStatus } from '../common/enums/ticket-status.enum';
+import { TicketPriority } from '../common/enums/ticket-priority.enum';
 import { Role } from '../common/enums/role.enum';
-import { ForbiddenException } from '@nestjs/common';
+import { CreateTicketDto } from './dto/create-ticket.entity';
+
 @Injectable()
 export class TicketsService {
 
@@ -17,8 +19,8 @@ export class TicketsService {
     private userRepo: Repository<User>,
   ) { }
 
-  async createTicket(dto, user) {
-    console.log("FULL USER OBJECT:", user);
+  async createTicket(dto: CreateTicketDto, user: { userId: number; role: string }) {
+    // Find a free IT agent to auto-assign
     const freeAgent = await this.userRepo.findOne({
       where: {
         role: Role.IT_AGENT,
@@ -26,44 +28,61 @@ export class TicketsService {
       },
     });
 
-    console.log("FOUND AGENT:", freeAgent);
+    const ticketData: Partial<Ticket> = {
+      title: dto.title,
+      description: dto.description,
+      priority: dto.priority || TicketPriority.MEDIUM,
+      assetType: dto.assetType || undefined,
+      createdBy: { id: user.userId } as User,
+    };
 
-    if (!freeAgent) {
-      throw new NotFoundException('No IT Agent available');
+    if (freeAgent) {
+      // Auto-assign to available agent
+      ticketData.assignedTo = { id: freeAgent.id } as User;
+      ticketData.status = TicketStatus.IN_PROGRESS;
+      ticketData.slaDeadline = new Date(Date.now() + 4 * 60 * 60 * 1000); // 4 hours SLA
+      await this.userRepo.save(freeAgent);
+    } else {
+      // No agent available — create as OPEN
+      ticketData.status = TicketStatus.OPEN;
     }
 
-    console.log("STEP 1 OK");
-
-    //freeAgent.isAvailable = false;
-
-    console.log("STEP 2 BEFORE SAVE");
-
-    await this.userRepo.save(freeAgent);
-
-    console.log("STEP 2 AFTER SAVE");
-    console.log("User ID:", user.userId);
-    console.log("Agent ID:", freeAgent.id);
-
-    const ticket = this.ticketRepo.create({
-      ...dto,
-      createdBy: { id: user.userId },
-      assignedTo: { id: freeAgent.id },
-      status: TicketStatus.IN_PROGRESS,
-      slaDeadline: new Date(Date.now() + 4 * 60 * 60 * 1000),
-    });
-
-    console.log("STEP 3 BEFORE SAVE");
-
+    const ticket = this.ticketRepo.create(ticketData);
     const savedTicket = await this.ticketRepo.save(ticket);
 
-    console.log("STEP 3 AFTER SAVE");
-
-    return savedTicket;
+    // Return with relations loaded
+    return this.ticketRepo.findOne({
+      where: { id: savedTicket.id },
+      relations: ['createdBy', 'assignedTo'],
+    });
   }
 
-  // 🔥 Agent updates status
-  async updateStatus(ticketId: number, status: TicketStatus, user: User) {
+  async findAll() {
+    return this.ticketRepo.find({
+      relations: ['createdBy', 'assignedTo'],
+      order: { createdAt: 'DESC' },
+    });
+  }
 
+  async findById(id: number) {
+    const ticket = await this.ticketRepo.findOne({
+      where: { id },
+      relations: ['createdBy', 'assignedTo'],
+    });
+    if (!ticket) throw new NotFoundException('Ticket not found');
+    return ticket;
+  }
+
+  async findByEmployee(userId: number) {
+    return this.ticketRepo.find({
+      where: { createdBy: { id: userId } },
+      relations: ['createdBy', 'assignedTo'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  // Agent updates ticket status
+  async updateStatus(ticketId: number, status: TicketStatus, user: { userId: number; role: string }) {
     const ticket = await this.ticketRepo.findOne({
       where: { id: ticketId },
       relations: ['assignedTo'],
@@ -71,12 +90,11 @@ export class TicketsService {
 
     if (!ticket) throw new NotFoundException('Ticket not found');
 
-    if (!ticket.assignedTo || ticket.assignedTo.id !== user.id) {
-      throw new ForbiddenException('Not authorized');
+    if (!ticket.assignedTo || ticket.assignedTo.id !== user.userId) {
+      throw new ForbiddenException('Not authorized to update this ticket');
     }
 
     if (ticket.status === status) {
-      console.log("Status already same. No update needed.");
       return ticket;
     }
 

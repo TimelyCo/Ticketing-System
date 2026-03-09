@@ -4,16 +4,15 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { TicketStatus } from '../../common/enums/ticket-status.enum';
-import { OneToMany } from 'typeorm';
+import { TicketPriority } from '../../common/enums/ticket-priority.enum';
 import { Message } from 'src/messages/entities/message.entity';
+
 @Entity()
 export class Ticket {
-  @OneToMany(() => Message, (message) => message.ticket)
-messages: Message[];
-
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -22,6 +21,16 @@ messages: Message[];
 
   @Column('text')
   description: string;
+
+  @Column({
+    type: 'enum',
+    enum: TicketPriority,
+    default: TicketPriority.MEDIUM,
+  })
+  priority: TicketPriority;
+
+  @Column({ nullable: true })
+  assetType: string;
 
   @Column({
     type: 'enum',
@@ -34,14 +43,17 @@ messages: Message[];
   createdBy: User;
 
   @ManyToOne(() => User, (user) => user.assignedTickets, {
-  nullable: true,
-  eager: true,
-   })
-    assignedTo: User;
+    nullable: true,
+    eager: true,
+  })
+  assignedTo: User;
 
   @Column({ type: 'timestamp', nullable: true })
   slaDeadline: Date;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => Message, (message) => message.ticket)
+  messages: Message[];
 }
