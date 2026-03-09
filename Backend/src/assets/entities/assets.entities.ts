@@ -1,23 +1,27 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class Asset {
-  @PrimaryGeneratedColumn()
-  id: number;
 
-  @Column()
-  name: string;
+ @PrimaryGeneratedColumn()
+ id: number;
 
-  @Column()
-  type: string;
+ @Column()
+ name: string;
 
-  @Column()
-  serialNumber: string;
+ @Column()
+ type: string;
 
-  @Column()
-  assignedTo: string;
+ @Column({ unique: true })
+ serialNumber: string;
+
+ @Column({ default: 'AVAILABLE' })
+ status: string;
+
+ @Column({ nullable: true })
+ assignedTo: string;
+
+ @Column({ default: 1 })
+ count: number;
+ 
 }
