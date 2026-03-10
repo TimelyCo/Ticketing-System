@@ -71,7 +71,7 @@ const LoginPage = () => {
             Welcome Back
           </h1>
           <p className="text-white/50 mt-2 text-sm">
-            Sign in to your IT account
+            Sign in to your IT Helpdesk account
           </p>
         </div>
 
