@@ -14,7 +14,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: ./backend
+    build: ./Backend
     container_name: mini_project_backend
     restart: always
     ports:
@@ -22,12 +22,12 @@ services:
     depends_on:
       - postgres
     env_file:
-      - ./backend/.env
+      - ./Backend/.env
     environment:
       DB_HOST: postgres
 
   frontend:
-    build: ./frontend
+    build: ./Frontend
     container_name: mini_project_frontend
     restart: always
     ports:
