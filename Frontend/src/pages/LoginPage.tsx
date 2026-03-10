@@ -1,5 +1,5 @@
 /**
- * LoginPage - Premium login with gradient accent and glassmorphism card.
+ * LoginPage - Login page with dark gray background and transparent form.
  */
 
 import { useState } from "react";
@@ -31,41 +31,21 @@ const LoginPage = () => {
       if (loggedInUser.role === "EMPLOYEE") navigate("/employee-dashboard");
       else if (loggedInUser.role === "IT_AGENT") navigate("/it-dashboard");
       else if (loggedInUser.role === "ADMIN") navigate("/admin-dashboard");
-    } catch (err: unknown) {
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        (err as { response?: { data?: { message?: string } } }).response?.data?.message
-      ) {
-        setError(
-          (err as { response: { data: { message: string } } }).response.data.message,
-        );
-      } else {
-        setError("Invalid email or password. Please try again.");
-      }
+    } catch {
+      setError("Invalid email or password. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
-      style={{ background: "linear-gradient(135deg, hsl(234 85% 15%), hsl(224 24% 12%), hsl(262 60% 12%))" }}
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{ background: "#1a1a1a" }} // dark gray background
     >
-      {/* Decorative blobs */}
-      <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-20"
-        style={{ background: "radial-gradient(circle, hsl(234 85% 60%), transparent 70%)" }} />
-      <div className="absolute bottom-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-15"
-        style={{ background: "radial-gradient(circle, hsl(262 80% 60%), transparent 70%)" }} />
-
       <div className="w-full max-w-md relative z-10 animate-fade-in-up">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl"
-            style={{ background: "var(--gradient-primary)" }}>
-            🎫
-          </div>
           <h1 className="text-3xl font-bold text-white">
             Welcome Back
           </h1>
@@ -74,19 +54,19 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* Login Card */}
+        {/* Login Form */}
         <form
           onSubmit={handleLogin}
-          className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl space-y-5"
+          className="bg-transparent border border-white/20 rounded-2xl p-8 shadow-lg space-y-5"
         >
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-xl">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-xl">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label className="block text-sm font-medium text-white mb-1.5">
               Email Address
             </label>
             <input
@@ -96,12 +76,12 @@ const LoginPage = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="you@company.com"
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[hsl(234,85%,60%)] focus:border-transparent transition-all"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white/70 mb-1.5">
+            <label className="block text-sm font-medium text-white mb-1.5">
               Password
             </label>
             <input
@@ -111,7 +91,7 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Enter your password"
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[hsl(234,85%,60%)] focus:border-transparent transition-all"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
             />
           </div>
 
@@ -119,17 +99,17 @@ const LoginPage = () => {
             id="login-submit"
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-200 hover:opacity-90 hover:shadow-lg disabled:opacity-50"
-            style={{ background: "var(--gradient-primary)" }}
+            className="w-full py-3 px-4 rounded-xl font-semibold text-black transition-all duration-200 hover:opacity-90 hover:shadow-lg disabled:opacity-50"
+            style={{ backgroundColor: "#d3d3d3" }} // light gray button
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
 
-          <p className="text-center text-sm text-white/40">
+          <p className="text-center text-sm text-white/50">
             Don't have an account?{" "}
             <Link
               to="/signup"
-              className="text-[hsl(234,85%,70%)] font-medium hover:underline"
+              className="text-white font-medium hover:underline"
             >
               Sign Up
             </Link>
