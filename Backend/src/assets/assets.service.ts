@@ -64,9 +64,27 @@ export class AssetsService {
       throw new NotFoundException(`Asset request with ID ${id} not found`);
     }
 
+    if (request.status === 'APPROVED') {
+      throw new Error('Request already approved');
+    }
+
+    const asset = await this.assetRepo.findOne({
+      where: { id: dto.assetId },
+    });
+
+    if (!asset) {
+      throw new NotFoundException('Asset not found');
+    }
+
+    if (asset.status === 'ASSIGNED') {
+      throw new Error('Asset already assigned');
+    }
+
+    // update request
     request.status = 'APPROVED';
     await this.requestRepo.save(request);
 
+    // create allocation record
     const allocation = this.allocationRepo.create({
       requestId: id,
       assetId: dto.assetId,
@@ -75,13 +93,12 @@ export class AssetsService {
 
     await this.allocationRepo.save(allocation);
 
-    await this.assetRepo.update(dto.assetId, {
-      status: 'ASSIGNED',
-    });
+    // update asset status
+    asset.status = 'ASSIGNED';
+    await this.assetRepo.save(asset);
 
     return allocation;
   }
-
   getAllocations() {
     return this.allocationRepo.find();
   }
