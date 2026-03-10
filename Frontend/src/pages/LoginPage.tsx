@@ -52,7 +52,7 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
       style={{ background: "linear-gradient(135deg, hsl(199, 65%, 50%), hsl(130, 43%, 55%), hsl(41, 71%, 49%))" }}
-   
+
     >
       {/* Decorative blobs */}
       <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-20"
@@ -71,7 +71,7 @@ const LoginPage = () => {
             Welcome Back
           </h1>
           <p className="text-white/50 mt-2 text-sm">
-            Sign in to your IT Helpdesk account
+            Sign in to your IT account
           </p>
         </div>
 
