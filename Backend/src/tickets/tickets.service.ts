@@ -61,7 +61,7 @@ export class TicketsService {
     return savedTicket;
   }
 
-  // 🔥 Agent updates status
+  // Agent updates status
   async updateStatus(ticketId: number, status: TicketStatus, user: User) {
 
     const ticket = await this.ticketRepo.findOne({

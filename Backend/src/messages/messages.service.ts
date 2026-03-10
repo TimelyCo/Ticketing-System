@@ -11,13 +11,18 @@ import { Message } from './entities/message.entity';
 import { Ticket } from '../tickets/entities/ticket.entity';
 import { User } from '../users/entities/user.entity';
 
+
+// Service handles application logic
 @Injectable()
 export class MessagesService {
 
   constructor(
+    // Repository gives access to message table
     @InjectRepository(Message)
     private messageRepo: Repository<Message>,
 
+
+// Repository for ticket table
     @InjectRepository(Ticket)
     private ticketRepo: Repository<Ticket>,
 
