@@ -1,0 +1,11 @@
+# Generic
+node_modules
+dist
+build
+.env
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+*.log
