@@ -9,16 +9,25 @@ import { Repository } from 'typeorm';
 
 import { Message } from './entities/message.entity';
 import { Ticket } from '../tickets/entities/ticket.entity';
+import { User } from '../users/entities/user.entity';
 
+// Service handles application logic
 @Injectable()
 export class MessagesService {
 
   constructor(
+    // Repository gives access to message table
     @InjectRepository(Message)
     private messageRepo: Repository<Message>,
 
+
+// Repository for ticket table
     @InjectRepository(Ticket)
     private ticketRepo: Repository<Ticket>,
+
+    // Repository for user table
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
   ) {}
 
   async sendMessage(ticketId: number, content: string, user: { userId: number; role: string }) {
@@ -35,6 +44,14 @@ export class MessagesService {
       ticket.assignedTo?.id !== user.userId
     ) {
       throw new ForbiddenException('Not allowed to chat on this ticket');
+    }
+    
+    const sender = await this.userRepo.findOne({
+      where: { id: user.userId },
+    });
+
+    if (!sender) {
+      throw new NotFoundException('User not found');
     }
 
     const message = this.messageRepo.create({

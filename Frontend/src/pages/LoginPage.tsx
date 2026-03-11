@@ -39,9 +39,9 @@ const LoginPage = () => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: "#1a1a1a" }} // dark gray background
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+      style={{ background: "linear-gradient(135deg, hsl(199, 65%, 50%), hsl(130, 43%, 55%), hsl(41, 71%, 49%))" }}
+
     >
       <div className="w-full max-w-md relative z-10 animate-fade-in-up">
         {/* Header */}
